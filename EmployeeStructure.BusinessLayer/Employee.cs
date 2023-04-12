@@ -10,6 +10,8 @@ public class Employee
     /// </summary>
     public const decimal DefaultSalary = 100;
 
+    private IHasSubordinates? _superior;
+
     /// <summary>
     /// Creates new employee 
     /// </summary>
@@ -46,5 +48,46 @@ public class Employee
     /// <summary>
     /// Employee's manager
     /// </summary>
-    public IHasSubordinates? Superior { get; }
+    public IHasSubordinates? Superior
+    {
+        get => _superior;
+        set
+        {
+            if (_superior == value)
+                return;
+
+            if (_superior != null)
+                OnSuperiorRemoved();
+
+            _superior = value;
+            if (_superior != null)
+                OnSuperiorAdded();
+        }
+    }
+
+    /// <summary>
+    /// Fires when employee's superior is set to some (not null) value
+    /// </summary>
+    public event EventHandler? SuperiorAdded;
+
+    /// <summary>
+    /// Fires when employee's superior is set to null
+    /// </summary>
+    public event EventHandler? SuperiorRemoved;
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return Name;
+    }
+
+    protected void OnSuperiorAdded()
+    {
+        SuperiorAdded?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected void OnSuperiorRemoved()
+    {
+        SuperiorRemoved?.Invoke(this, EventArgs.Empty);
+    }
 }
