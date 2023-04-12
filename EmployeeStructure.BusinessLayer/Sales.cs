@@ -29,9 +29,8 @@ public class Sales : Employee, IHasSubordinates
         if (employee.Superior == this)
             throw new InvalidOperationException($"The employee {employee} is already subordinated to this sales employee");
 
-        employee.SuperiorAdded += EmployeeOnSuperiorAdded;
-        employee.SuperiorRemoved += EmployeeOnSuperiorRemoved;
-        employee.Superior = this;
+        employee.SetSuperiorDirect(this);
+        _subordinates.Add(employee);
     }
 
     /// <inheritdoc/>
@@ -40,36 +39,13 @@ public class Sales : Employee, IHasSubordinates
         if (employee.Superior != this)
             throw new InvalidOperationException($"The employee {employee} isn't subordinated to this sales employee");
 
-        employee.Superior = null;
-        employee.SuperiorAdded -= EmployeeOnSuperiorAdded;
-        employee.SuperiorRemoved -= EmployeeOnSuperiorRemoved;
+        employee.SetSuperiorDirect(null);
+        _subordinates.Remove(employee);
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
         return $"Sales: {base.ToString()}";
-    }
-
-    /// <summary>
-    /// Adds an employee to the subordinates collection when this sales employee is set as the employee's superior
-    /// </summary>
-    private void EmployeeOnSuperiorAdded(object? sender, EventArgs e)
-    {
-        if (sender is not Employee employee)
-            return;
-
-        _subordinates.Add(employee);
-    }
-
-    /// <summary>
-    /// Removes an employee from the subordinates collection when this sales employee is this employee's superior no more
-    /// </summary>
-    private void EmployeeOnSuperiorRemoved(object? sender, EventArgs e)
-    {
-        if (sender is not Employee employee)
-            return;
-
-        _subordinates.Remove(employee);
     }
 }

@@ -56,24 +56,10 @@ public class Employee
             if (_superior == value)
                 return;
 
-            if (_superior != null)
-                OnSuperiorRemoved();
-
-            _superior = value;
-            if (_superior != null)
-                OnSuperiorAdded();
+            _superior?.RemoveSubordinate(this);
+            value?.AddSubordinate(this);
         }
     }
-
-    /// <summary>
-    /// Fires when employee's superior is set to some (not null) value
-    /// </summary>
-    public event EventHandler? SuperiorAdded;
-
-    /// <summary>
-    /// Fires when employee's superior is set to null
-    /// </summary>
-    public event EventHandler? SuperiorRemoved;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -81,13 +67,12 @@ public class Employee
         return Name;
     }
 
-    protected void OnSuperiorAdded()
+    /// <summary>
+    /// Internal use only method to set superior value bypassing setter
+    /// </summary>
+    /// <param name="superior">Managing employee</param>
+    internal void SetSuperiorDirect(IHasSubordinates? superior)
     {
-        SuperiorAdded?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected void OnSuperiorRemoved()
-    {
-        SuperiorRemoved?.Invoke(this, EventArgs.Empty);
+        _superior = superior;
     }
 }
