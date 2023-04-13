@@ -102,4 +102,98 @@ public class ManagerTests
 
         Assert.That(manager.ToString(), Is.EqualTo($"Manager: {name}"));
     }
+
+    [Test]
+    public void GetNetSalaryOnDate_NoSubordinatesAndWholeNumberOfYears_ShouldReturnSalaryWithYearlyPremium()
+    {
+        var hireDate = new DateOnly(2022, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 105;
+        var manager = new Manager("Test Manager", hireDate, salary);
+
+        var netSalary = manager.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_NoSubordinatesAndFractionalYears_ShouldReturnSalaryWithYearlyPremiumForWholeYearsOnly()
+    {
+        var hireDate = new DateOnly(2020, 10, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 110;
+        var manager = new Manager("Test Manager", hireDate, salary);
+
+        var netSalary = manager.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_NoSubordinatesManyYearsOfEmployment_PremiumShouldNotExceedMaximumPercentage()
+    {
+        var hireDate = new DateOnly(2010, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 140;
+        var manager = new Manager("Test Manager", hireDate, salary);
+
+        var netSalary = manager.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_1stLevelSubordinates_ShouldAddPremiumToSalary()
+    {
+        var hireDate = new DateOnly(2023, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 101;
+        var manager = new Manager("Test Manager", hireDate, salary);
+
+        manager.AddSubordinate(new Employee("Test Employee 1", hireDate, salary));
+        manager.AddSubordinate(new Employee("Test Employee 2", hireDate, salary));
+
+        var netSalary = manager.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_TransitionalSubordinates_ShouldNotAddPremiumToSalary()
+    {
+        var hireDate = new DateOnly(2023, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 100.505m;
+        var manager = new Manager("Test Manager", hireDate, salary);
+
+        var subManager = new Manager("Subordinate Manager", hireDate, salary, manager);
+        
+        subManager.AddSubordinate(new Employee("Test Employee 1", hireDate, salary));
+        subManager.AddSubordinate(new Employee("Test Employee 2", hireDate, salary));
+
+        var netSalary = manager.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_SubordinatesHiredLater_ShouldBeSkipped()
+    {
+        var managerHireDate = new DateOnly(2023, 3, 1);
+        var hireDate = new DateOnly(2023, 4, 1);
+        var payrollDate = new DateOnly(2023, 3, 1);
+        var salary = 100;
+        var expectedSalary = 100;
+        var manager = new Manager("Test Manager", managerHireDate, salary);
+        manager.AddSubordinate(new Employee("Test Employee", hireDate, salary));
+
+        var netSalary = manager.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
 }

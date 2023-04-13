@@ -16,12 +16,21 @@ public class Manager : Employee, IHasSubordinates
         : base(name, hireDate, salary, superior)
     {
         _subordinates = new List<Employee>();
+        _subordinatesPremiumPercent = 0.5m;
     }
 
     private readonly List<Employee> _subordinates;
 
+    private readonly decimal _subordinatesPremiumPercent;
+
     /// <inheritdoc/>
     public IEnumerable<Employee> Subordinates => _subordinates.AsReadOnly();
+
+    /// <inheritdoc/>
+    protected override decimal YearlyPremiumPercent => 5;
+
+    /// <inheritdoc/>
+    protected override decimal MaximumPremiumPercent => 40;
 
     /// <inheritdoc/>
     public void AddSubordinate(Employee employee)
@@ -41,6 +50,25 @@ public class Manager : Employee, IHasSubordinates
 
         employee.SetSuperiorDirect(null);
         _subordinates.Remove(employee);
+    }
+
+    public override decimal GetNetSalaryOnDate(DateOnly date)
+    {
+        var baseSalary = base.GetNetSalaryOnDate(date);
+        var premium = Subordinates
+            .Sum(e =>
+            {
+                try
+                {
+                    return e.GetNetSalaryOnDate(date);
+                }
+                catch (ArgumentException)
+                {
+                    return 0m;
+                }
+            });
+
+        return baseSalary + premium * _subordinatesPremiumPercent / 100;
     }
 
     /// <inheritdoc/>

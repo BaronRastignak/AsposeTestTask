@@ -66,12 +66,12 @@ public class Employee
     /// <summary>
     /// Percentage of salary increase for each whole year of employment
     /// </summary>
-    protected virtual int YearlyPremiumPercent => 3;
+    protected virtual decimal YearlyPremiumPercent => 3;
 
     /// <summary>
     /// Maximum percentage of salary increase regardless of employment length
     /// </summary>
-    protected virtual int MaximumPremiumPercent => 30;
+    protected virtual decimal MaximumPremiumPercent => 30;
 
     public virtual decimal GetNetSalaryOnDate(DateOnly date)
     {
