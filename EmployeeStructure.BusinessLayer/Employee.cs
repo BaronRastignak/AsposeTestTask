@@ -1,4 +1,6 @@
-﻿namespace EmployeeStructure.BusinessLayer;
+﻿using EmployeeStructure.BusinessLayer.Extensions;
+
+namespace EmployeeStructure.BusinessLayer;
 
 /// <summary>
 /// The company's employee
@@ -59,6 +61,26 @@ public class Employee
             _superior?.RemoveSubordinate(this);
             value?.AddSubordinate(this);
         }
+    }
+
+    /// <summary>
+    /// Percentage of salary increase for each whole year of employment
+    /// </summary>
+    protected virtual int YearlyPremiumPercent => 3;
+
+    /// <summary>
+    /// Maximum percentage of salary increase regardless of employment length
+    /// </summary>
+    protected virtual int MaximumPremiumPercent => 30;
+
+    public virtual decimal GetNetSalaryOnDate(DateOnly date)
+    {
+        if (date < HireDate)
+            throw new ArgumentException("Payroll date can't be before the employee's hire date", nameof(date));
+
+        var yearsOfEmployment = HireDate.DifferenceInYears(date);
+        var premiumPercent = Math.Min(yearsOfEmployment * YearlyPremiumPercent, MaximumPremiumPercent);
+        return Salary * (100 + premiumPercent) / 100;
     }
 
     /// <inheritdoc/>
