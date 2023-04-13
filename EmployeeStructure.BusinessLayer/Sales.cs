@@ -16,12 +16,20 @@ public class Sales : Employee, IHasSubordinates
         : base(name, hireDate, salary, superior)
     {
         _subordinates = new List<Employee>();
+        _subordinatesPremiumPercent = 0.3m;
     }
 
     private readonly List<Employee> _subordinates;
+    private readonly decimal _subordinatesPremiumPercent;
 
     /// <inheritdoc/>
     public IEnumerable<Employee> Subordinates => _subordinates.AsReadOnly();
+
+    /// <inheritdoc/>
+    protected override decimal YearlyPremiumPercent => 1;
+
+    /// <inheritdoc/>
+    protected override decimal MaximumPremiumPercent => 35;
 
     /// <inheritdoc/>
     public void AddSubordinate(Employee employee)
@@ -44,8 +52,38 @@ public class Sales : Employee, IHasSubordinates
     }
 
     /// <inheritdoc/>
+    public override decimal GetNetSalaryOnDate(DateOnly date)
+    {
+        var baseSalary = base.GetNetSalaryOnDate(date);
+        var subordinatesSalaries = Subordinates
+            .Sum(sub => GetNetSalariesFromHierarchy(sub, date));
+
+        return baseSalary + subordinatesSalaries * _subordinatesPremiumPercent / 100;
+    }
+
+    /// <inheritdoc/>
     public override string ToString()
     {
         return $"Sales: {base.ToString()}";
+    }
+
+    private static decimal GetNetSalariesFromHierarchy(Employee employee, DateOnly date)
+    {
+        decimal baseSalary;
+        try
+        {
+            baseSalary = employee.GetNetSalaryOnDate(date);
+        }
+        catch (ArgumentException)
+        {
+            baseSalary = 0;
+        }
+
+        if (employee is not IHasSubordinates superior)
+            return baseSalary;
+
+        var subordinatesSalaries = superior.Subordinates
+            .Sum(sub => GetNetSalariesFromHierarchy(sub, date));
+        return baseSalary + subordinatesSalaries;
     }
 }

@@ -73,6 +73,13 @@ public class Employee
     /// </summary>
     protected virtual decimal MaximumPremiumPercent => 30;
 
+    /// <summary>
+    /// Calculates an employee's salary on the given date
+    /// </summary>
+    /// <param name="date">Date on which salary should be calculated</param>
+    /// <exception cref="ArgumentException">
+    /// When <paramref name="date"/> is earlier than the employee's <see cref="HireDate"/>
+    /// </exception>
     public virtual decimal GetNetSalaryOnDate(DateOnly date)
     {
         if (date < HireDate)

@@ -102,4 +102,85 @@ public class SalesTests
 
         Assert.That(sales.ToString(), Is.EqualTo($"Sales: {name}"));
     }
+
+    [Test]
+    public void GetNetSalaryOnDate_NoSubordinatesAndWholeNumberOfYears_ShouldReturnSalaryWithYearlyPremium()
+    {
+        var hireDate = new DateOnly(2022, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 101;
+        var sales = new Sales("Test Sales", hireDate, salary);
+
+        var netSalary = sales.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_NoSubordinatesAndFractionalYears_ShouldReturnSalaryWithYearlyPremiumForWholeYearsOnly()
+    {
+        var hireDate = new DateOnly(2020, 10, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 102;
+        var sales = new Sales("Test Sales", hireDate, salary);
+
+        var netSalary = sales.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_NoSubordinatesManyYearsOfEmployment_PremiumShouldNotExceedMaximumPercentage()
+    {
+        var hireDate = new DateOnly(1985, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 135;
+        var sales = new Sales("Test Sales", hireDate, salary);
+
+        var netSalary = sales.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_AllSubordinates_ShouldAddPremiumToSalary()
+    {
+        var hireDate = new DateOnly(2023, 4, 1);
+        var payrollDate = new DateOnly(2023, 4, 1);
+        var salary = 100;
+        var expectedSalary = 100.9009m;
+        var sales = new Sales("Test Sales", hireDate, salary);
+
+        sales.AddSubordinate(new Employee("Test Employee 1", hireDate, salary));
+
+        var subordinate = new Sales("Subordinate Sales", hireDate, salary, sales);
+        subordinate.AddSubordinate(new Employee("Test Employee 2", hireDate, salary));
+
+        var netSalary = sales.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
+
+    [Test]
+    public void GetNetSalaryOnDate_SubordinatesHiredLater_ShouldBeSkipped()
+    {
+        var salesHireDate = new DateOnly(2023, 3, 1);
+        var subordinateHireDate = new DateOnly(2023, 4, 1);
+        var payrollDate = new DateOnly(2023, 3, 1);
+        var salary = 100;
+        var expectedSalary = 100.6m;
+        var sales = new Sales("Test Sales", salesHireDate, salary);
+
+        sales.AddSubordinate(new Employee("Test Employee 1", salesHireDate, salary));
+
+        var subordinate = new Sales("Subordinate Sales", subordinateHireDate, salary, sales);
+        subordinate.AddSubordinate(new Employee("Test Employee 2", salesHireDate, salary));
+
+        var netSalary = sales.GetNetSalaryOnDate(payrollDate);
+
+        Assert.That(netSalary, Is.EqualTo(expectedSalary));
+    }
 }

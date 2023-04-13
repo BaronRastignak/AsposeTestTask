@@ -52,6 +52,7 @@ public class Manager : Employee, IHasSubordinates
         _subordinates.Remove(employee);
     }
 
+    /// <inheritdoc/>
     public override decimal GetNetSalaryOnDate(DateOnly date)
     {
         var baseSalary = base.GetNetSalaryOnDate(date);
