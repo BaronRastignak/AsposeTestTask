@@ -53,6 +53,26 @@ public class EmployeeTests
     }
 
     [Test]
+    public void Constructor_ZeroSalary_ShouldThrowException()
+    {
+        var name = "Test Employee";
+        var hireDate = DateTime.Today;
+        var salary = 0;
+
+        Assert.That(() => new Employee(name, DateOnly.FromDateTime(hireDate), salary), Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
+    [Test]
+    public void Constructor_NegativeSalary_ShouldThrowException()
+    {
+        var name = "Test Employee";
+        var hireDate = DateTime.Today;
+        var salary = -1;
+
+        Assert.That(() => new Employee(name, DateOnly.FromDateTime(hireDate), salary), Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
+    [Test]
     public void Constructor_EmptyName_ShouldThrowException()
     {
         var name = string.Empty;

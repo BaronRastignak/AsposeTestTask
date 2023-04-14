@@ -26,6 +26,9 @@ public class Employee
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentNullException(nameof(name), "Employee's name can't be empty");
 
+        if (salary <= 0)
+            throw new ArgumentOutOfRangeException(nameof(salary), "Salary must be positive");
+
         Name = name;
         HireDate = hireDate;
         Salary = salary;

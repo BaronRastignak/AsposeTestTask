@@ -1,0 +1,17 @@
+
+# Aspose Test Task
+
+A small library and simple API to keep track of an employees structure and calculate salary rate for the given employee or salary total for all employees on any given date.
+
+Different employee classes derive from the common **Employee** base class, and those that may have other employees subordinate to them implement the **IHasSubordinates** interface. This interface is also used to denote the *Superior* (employee's manager or superviser) property in the **Employee** class.
+
+Adding employees to the employees hierarchy and relieving them from under their *Superior* is encapsulated into classes implemeting the **IHasSubordinates** interface (**Manager** and **Sales**).
+- These implementations enforce the rule that employee must simultaneously either have its *Superior* property set and be contained in the *Subordinates* collection of this and only this *Superior*, or have `null` value as its *Superior* and be removed from all *Subordinates* collections. The only way to set the value of the *Superior* property is to use the internal method of the **Employee** class, that prevents from setting a *Superior* without adding an **Employee** into a collection.
+
+- But this may pose a problem in case of external implementations of the **IHasSubordinates** interface: they will be able to add an **Employee** into their *Subordinates*, but not to set themselves as its *Superior* (if they don't derive from the existing implementations of the **Manager** or **Sales**). One way to mitigate this may be to break the **IHasSubordinates** interface into parts leaving the *Subordinates* collection in the public one and moving the *AddSubordinate* and *RemoveSubordinate* methods to another, internal, interface unreachable for the external implementations. This would force new implementations of the **IHasSubordinates** interface to derive from either the **Manager** or the **Sales** class in order to be able to manage subordinate employees.
+
+- Another problem arises from the current ability of any **IHasSubordinate** implementation to remove an employee from under its current superior and include them into their own subordinates collection. If this behavior is undesired than current *AddEmployee* methods can be changed to require an employee without *Superior* (to throw on any non-`null` value of a *Superior*, not only on an attempt to add already subordinated employee once again). Then some higher level business layer entity should be used to enforce business requirement for transferring a subordinated employee from one superior to another in two distinct steps (explicit removal of the employee from under its current *Superior* and placing into another *Superior*'s hierarchy).
+
+Calculation of an employee's salary rate is implemented using a virtual method *GetNetSalaryOnDate* defined in the base **Employee** class, and a number of fields and virtual properties setting limits and coefficients for calculating additional premium on the employee's term of employment and subordinate employees performance.
+
+- Overriding implementations of the *GetNetSalaryOnDate* method allow for different strategies of premium calculation while the base method is used to get base salary rate uniformly for all kinds of employees, tuned to business requirements via virtual properties providing different premium rates and limits for different categories of employees.
